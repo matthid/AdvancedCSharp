@@ -16,7 +16,13 @@
 
 ### Roadmap
 
- - **Meta**
+- **Meta**
+- C# Language Spec
+- Corner cases
+- Breaking changes
+- Compiler Internals
+- Runtime & EcoSystem
+
 
 ---
 
@@ -25,6 +31,7 @@
 - Not complete
 - Spec is huge
 - Lots of stuff we might skip
+- Most samples can be run in CSI
 
 ***
 
@@ -32,6 +39,10 @@
 
 - Meta
 - **C# Language Spec**
+- Corner cases
+- Breaking changes
+- Compiler Internals
+- Runtime & EcoSystem
 
 ---
 
@@ -64,7 +75,7 @@ What is equivalent to `char ch = ' ';`:
 ---
 
 ```csharp
-public static class NumberWriter{
+public static class NumberWriter {
     public static void Display(int x) {
         Console.WriteLine("Integer: " + x);
     }
@@ -79,7 +90,7 @@ NumberWriter.Display(value);
 1. `"Long: 10"`
 2. `"Integer: 10"`
 3. throws `RuntimeBinderException`
-4. doesn't compile
+4. Doesn't compile
 
 ---
 
@@ -91,13 +102,13 @@ Console.WriteLine(value.Length);
 1. `"321"`
 2. `"3"`
 3. Doesn't compile
-4. throw `RuntimeBinderException`
+4. throws `RuntimeBinderException`
 
 ---
 
 ```csharp
 static void DoSomething() { throw new Exception("Test"); }
-static bool MyCondition(Exception ex) { return ex.Code == 42; }
+static bool MyCondition(Exception ex) { return ex.HResult == 42; }
 static void Main1() {
     try { DoSomething(); }
     catch (Exception ex) when (MyCondition(ex)) {
@@ -151,14 +162,53 @@ static bool MyCondition(Exception ex) {
 }
 ```
 
-***
+---
 
+```csharp
+static void DoSomething() { throw new ArgumentException("ArgumentExn"); }
+static bool MyCondition(Exception ex) { throw new IOException("IOExn"); }
+static void Main() {
+    try { DoSomething(); }
+    catch (ArgumentException ex) when (MyCondition(ex)) {
+        Console.WriteLine("Catched ArgumentException"); 
+    }
+}
+```
+
+1. prints `"Catched ArgumentException"`
+2. Unhandled Exception: `ArgumentException`
+3. Unhandled Exception: `IOException`
+
+---
+
+```csharp
+static void DoSomething() { throw new ArgumentException("ArgumentExn"); }
+static bool MyCondition(Exception ex) { throw new IOException("IOExn"); }
+static void Main() {
+    try { DoSomething(); }
+    catch (ArgumentException ex) when (MyCondition(ex)) {
+        Console.WriteLine("Catched ArgumentException"); 
+    }
+    catch (ArgumentException ex) {
+        Console.WriteLine("Catched ArgumentException (2)"); 
+    }
+}
+```
+
+1. prints `"Catched ArgumentException (2)"`
+2. Unhandled Exception: `ArgumentException`
+3. Unhandled Exception: `IOException`
+
+***
 
 ### Roadmap
 
- - Meta
- - **Corner cases**
-
+- Meta
+- C# Language Spec
+- **Corner cases**
+- Breaking changes
+- Compiler Internals
+- Runtime & EcoSystem
 
 ---
 
@@ -211,10 +261,6 @@ public struct Teaser {
 
 ```csharp
 public class MyDummy {
-    public override bool Equals(object other) {
-        System.Console.WriteLine("Comparing");
-        return other == null;
-    }
     public MyDummy(string t) { T = t; }
     public string T { get; }
     public override string ToString () { return T; }
@@ -233,12 +279,17 @@ test ?? MyDummy.Default()
 ---
 
 ```csharp
-    public override bool Equals(object other) {
-        return other == null;
-    }
-var test = new MyEquals("");
-
+public class MyDummy {
+    // ...
+    public static bool operator==(MyDummy d1, MyDummy d2) =>
+        Object.ReferenceEquals(d1, null) ||
+        Object.ReferenceEquals(d2, null);
+    public static bool operator!=(MyDummy d1, MyDummy d2) =>
+        !(d1 == d2);
+}
 ```
+
+![](images/RefactorNullCheck.png)
 
 ---
 
@@ -270,6 +321,17 @@ Byte by3 = (true ? 1 : 2);
 
 ***
 
+### Roadmap
+
+- Meta
+- C# Language Spec
+- Corner cases
+- **Breaking changes**
+- Compiler Internals
+- Runtime & EcoSystem
+
+---
+
 ### Breaking changes
 
 - Binary-level break
@@ -285,7 +347,7 @@ https://stackoverflow.com/questions/1456785/a-definitive-guide-to-api-breaking-c
 ```csharp
  public class Foo
  {
-+  public void Bar();
++  public void Bar() { }
  }
 ```
 
@@ -319,6 +381,8 @@ https://stackoverflow.com/questions/1456785/a-definitive-guide-to-api-breaking-c
  }
 ```
 
+' binary breaking (behavior) change
+
 ---
 
 ### Default parameter?
@@ -327,6 +391,8 @@ https://stackoverflow.com/questions/1456785/a-definitive-guide-to-api-breaking-c
 -public void MyDummy(string s, int v = 4);
 +public void MyDummy(string s, int v = 4, int w = 3);
 ```
+
+' Breaking change
 
 ---
 
@@ -373,64 +439,17 @@ interface IFoo : IFooBase {
 ' Explicit implementations -> Source
 ' binding breaks -> Binary
 
-***
-
-### Roadmap
-
- - Meta
- - Corner cases
- - **Runtime & EcoSystem**
-
----
-
-### Runtime & EcoSystem
-
-- (1) in .NET only a single assembly with the same name (+PublicKeyToken) can be loaded
-- (2) .NET will automatically redirect all assembly requests to the latest version 
-- (3) NuGet package version matches the version of the assembly
-
----
-
-app.config
-
-https://docs.microsoft.com/en-us/dotnet/framework/configure-apps/file-schema/runtime/index
-
----
-
-```csharp
-List<int> list = new List<int>() { 1, 2, 3 };
-list.ForEach(i =>
-{
-    Console.WriteLine(i);
-    if (i < 3) { list.Add(i + 1); }
-});
-```
-
-1. prints 1, 2, 3, 2, 3, 3
-2. throws `InvalidOperationException("Collection was modified")`
-
----
-
-```csharp
-Console.WriteLine("Uri: " + new Uri("http://my.ser/path./item"));
-```
-
-1. prints `http://my.ser/path./item`
-2. prints `http://my.ser/path/item`
-
----
-
-Assembly.Load executing user code?
-GetCustomAttributes?
 
 ***
 
 ### Roadmap
 
- - Meta
- - Corner cases
- - Runtime & EcoSystem
- - **Internals**
+- Meta
+- C# Language Spec
+- Corner cases
+- Breaking changes
+- **Compiler Internals**
+- Runtime & EcoSystem
 
 ---
 
@@ -463,6 +482,8 @@ public IEnumerable<int> GetFirst10Nos() {
 }
 ```
 
+---
+
 ```csharp
 public IEnumerable<int> GetFirst10Nos() {
     <GetFirst10Nos>d__0 d__ = new <GetFirst10Nos>d__0(-2);
@@ -470,6 +491,8 @@ public IEnumerable<int> GetFirst10Nos() {
     return d__;
 }
 ```
+
+' <GetFirst10Nos>d__0 implements IEnumerable & IEnumerator
 
 ---
 
@@ -496,6 +519,94 @@ class MyTaskBuilder {
     public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine) where TAwaiter : ICriticalNotifyCompletion where TStateMachine : IAsyncStateMachine { }
 }
 ```
+
+---
+
+https://weblogs.asp.net/dixin/understanding-c-sharp-async-await-1-compilation
+
+
+***
+
+### Roadmap
+
+- Meta
+- C# Language Spec
+- Corner cases
+- Breaking changes
+- Compiler Internals
+- **Runtime & EcoSystem**
+
+---
+
+### ExecutionContext
+
+- similar to thread local storage but for an asynchronous world
+- `AsyncLocal<T>`
+- `var ec = ExecutionContext.Capture();`
+- `ExecutionContext.Run(ec, delegate)`
+- `CallContext`
+
+---
+
+### SynchronizationContext
+
+- Abstraction for a specific environment
+- for example WPF-UI-Thread
+- independent of concrete implementation (WPF <> WinForms)
+- !`SynchronizationContext.Current` "flows" with `ExecutationContext`
+
+---
+
+### Async "SwitchTo"
+
+- Demo
+
+---
+
+### Runtime & EcoSystem
+
+1. in .NET only a single assembly with the same name (+PublicKeyToken) can be loaded
+2. .NET will automatically redirect all assembly requests to the latest version 
+3. NuGet package version matches the version of the assembly
+
+---
+
+### Change runtime behavior
+
+app.config
+
+https://docs.microsoft.com/en-us/dotnet/framework/configure-apps/file-schema/runtime/index
+
+runtimeconfig.template.json
+
+https://docs.microsoft.com/en-us/dotnet/core/tools/project-json-to-csproj#runtimeoptions
+
+---
+
+```csharp
+List<int> list = new List<int>() { 1, 2, 3 };
+list.ForEach(i =>
+{
+    Console.WriteLine(i);
+    if (i < 3) { list.Add(i + 1); }
+});
+```
+
+1. prints 1, 2, 3, 2, 3, 3
+2. throws `"Collection was modified"`
+
+---
+
+```csharp
+Console.WriteLine("Uri: " + new Uri("http://my.ser/path./item"));
+```
+
+1. prints `http://my.ser/path./item`
+2. prints `http://my.ser/path/item`
+
+---
+
+![](images/target_framework.png)
 
 ---
 
