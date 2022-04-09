@@ -1,16 +1,16 @@
-- title : Advanced C# and internals
-- description : internals and implementation
-- author : Matthias Dittrich
-- theme : league
-- transition : default
+---
+marp: true
+class: invert
+title : Advanced C# and internals
+description : internals and implementation
+author : Matthias Dittrich
+---
 
-***
 
 ## Advanced C# and internals
 
-<img style="border-style: none" border="0" src="images/AIT-Logo_small.jpg" />
 
-### **Matthias Dittrich**, AIT GmbH <br /> [@matthi\_\_d](http://twitter.com/matthi__d) | [github matthid](https://github.com/matthid) | [aitgmbh.de](http://www.aitgmbh.de/)
+### **Matthias Dittrich**, QPLIX GmbH <br /> [@matthi\_\_d](http://twitter.com/matthi__d) | [github matthid](https://github.com/matthid) | [qplix.com](https://www.qplix.com/)
 
 ***
 
@@ -32,6 +32,12 @@
 - Spec is huge
 - Lots of stuff we might skip
 - Most samples can be run in CSI
+- Some samples can fill their own lecture...
+
+<!--
+This really is an advanced lecture, don't feel bad if you don't understand some things.
+See them as an adventure to learn more about the language you work with every day :)
+-->
 
 ***
 
@@ -47,11 +53,11 @@
 ---
 
 ```csharp
-namespace People
-{
-   public class Employee 
-   { /* ... */ }
-}
+namespace People;
+
+public class Employee 
+{ /* ... */ }
+
 ```
 
 Which other access modifiers could alternatively be applied to this class:
@@ -64,6 +70,31 @@ Which other access modifiers could alternatively be applied to this class:
 
 ---
 
+```csharp
+namespace People;
+
+public class ProtectedPrivate 
+{ 
+    protected private ProtectedPrivate(){}
+}
+
+```
+
+What does this mean?
+
+1. access like `private` OR `protected`
+   (access is allowed when `private` or `protected` alone would allow the access)
+2. access like `private` AND `protected`
+3. access like `internal` OR `protected`
+4. access like `internal` AND `protected`
+5. access like `protected internal`
+
+<!--
+Introduced in C# 7.2, November 15th, 2017
+-->
+
+---
+
 What is equivalent to `char ch = ' ';`:
 
 1. `char ch = "d32";`
@@ -71,6 +102,7 @@ What is equivalent to `char ch = ' ';`:
 3. `char ch = '0x20';`
 4. `char ch = '\x20';`
 5. `char ch = 32;`
+
 
 ---
 
@@ -101,8 +133,14 @@ Console.WriteLine(value.Length);
 
 1. `"321"`
 2. `"3"`
-3. Doesn't compile
 4. throws `RuntimeBinderException`
+3. Doesn't compile
+
+---
+
+### DLR
+
+- Demo
 
 ---
 
@@ -125,8 +163,11 @@ static void Main2() {
 }
 ```
 
-' Stack is does not unwind
-' Debugger does not halt (first chance exception)
+<!-- 
+
+Stack is does not unwind
+Debugger does not halt (first chance exception)
+-->
 
 ---
 
@@ -178,6 +219,7 @@ static void Main() {
 1. prints `"Catched ArgumentException"`
 2. Unhandled Exception: `ArgumentException`
 3. Unhandled Exception: `IOException`
+4. Runtime crashes
 
 ---
 
@@ -198,6 +240,7 @@ static void Main() {
 1. prints `"Catched ArgumentException (2)"`
 2. Unhandled Exception: `ArgumentException`
 3. Unhandled Exception: `IOException`
+4. Runtime crashes
 
 ***
 
@@ -216,7 +259,7 @@ static void Main() {
 
 ### Disclaimer
 
-https://stackoverflow.com/questions/194484/whats-the-strangest-corner-case-youve-seen-in-c-sharp-or-net
+[https://stackoverflow.com/questions/194484/whats-the-strangest-corner-case-youve-seen-in-c-sharp-or-net](https://stackoverflow.com/questions/194484/whats-the-strangest-corner-case-youve-seen-in-c-sharp-or-net)
 
 ---
 
@@ -243,6 +286,13 @@ class Mate {
     Console.WriteLine("Object"); } }
 ```
 
+<!--
+- 1x "Enum"
+- 3x "Enum"
+- 5x "Enum"
+- 6x "Enum"
+-->
+
 ---
 
 ### Structs
@@ -254,6 +304,33 @@ public struct Teaser {
   }
 }
 ```
+
+--- 
+
+```csharp
+public readonly ref struct Measurement
+{
+    public Measurement() { Values = new[]{double.NaN}; }
+    public ReadOnlySpan<double> Values { get; init; }
+    public readonly string Description { get; init; }
+
+    public readonly Measurement SetValue(ReadOnlySpan<double> values) => this with { Values = values };
+}
+```
+
+How many compiler errors?
+
+1. None
+2. At least 1
+3. At least 2
+4. At least 3
+
+<!--
+ref struct = C# 7.2 Feature
+readonly instance members = C# 8 Feature
+readonly init property = C# 9 Feature
+with expression = C# 10 Feature
+-->
 
 --- 
 
@@ -275,6 +352,8 @@ test != null ? test : MyDummy.Default()
 ```csharp
 test ?? MyDummy.Default()
 ```
+
+<!-- Is this refactoring always safe and holds? -->
 
 ---
 
@@ -307,7 +386,13 @@ public class Derived : Base {
 
 ```
 
-' (4,4): error CS1971: The call to method 'Initialize' needs to be dynamically dispatched, but cannot be because it is part of a base access expression. Consider casting the dynamic arguments or eliminating the base access.
+What happens here?
+
+<!--
+(4,4): error CS1971: The call to method 'Initialize' needs to be dynamically dispatched, but cannot be because it is part of a base access expression. Consider casting the dynamic arguments or eliminating the base access.
+
+Edge case, normally it would be a dynamic dispatch but for overrides it has to know.
+-->
 
 ---
 
@@ -316,8 +401,14 @@ public class Derived : Base {
 ```csharp
 bool abool = true;
 Byte by1 = (abool ? 1 : 2);
-Byte by3 = (true ? 1 : 2);
+Byte by2 = (true ? 1 : 2);
 ```
+
+1. `by1` and `by2` are assigned the same number
+2. `by1` and `by2` are assigned different numbers
+3. Compiler error on Line 2 (assignment of `by1`)
+4. Compiler error on Line 2 & 3
+
 
 ***
 
@@ -335,10 +426,11 @@ Byte by3 = (true ? 1 : 2);
 ### Breaking changes
 
 - Binary-level break
+- Binary-level quiet semantics change
 - Source-level break
 - Source-level quiet semantics change
 
-https://stackoverflow.com/questions/1456785/a-definitive-guide-to-api-breaking-changes-in-net
+[https://stackoverflow.com/questions/1456785/a-definitive-guide-to-api-breaking-changes-in-net](https://stackoverflow.com/questions/1456785/a-definitive-guide-to-api-breaking-changes-in-net)
 
 ---
 
@@ -351,7 +443,9 @@ https://stackoverflow.com/questions/1456785/a-definitive-guide-to-api-breaking-c
  }
 ```
 
-' source-level quiet semantics change. (extension methods)
+<!-- 
+source-level quiet semantics change. (extension methods)
+-->
 
 ---
 
@@ -365,8 +459,10 @@ https://stackoverflow.com/questions/1456785/a-definitive-guide-to-api-breaking-c
  }
 ```
 
-' binary breaking change
-' source-level break (used in lambda)
+<!--
+binary breaking change
+source-level break (used in lambda)
+-->
 
 ---
 
@@ -381,7 +477,9 @@ https://stackoverflow.com/questions/1456785/a-definitive-guide-to-api-breaking-c
  }
 ```
 
-' binary breaking (behavior) change
+<!--
+binary breaking (behavior) change
+-->
 
 ---
 
@@ -392,7 +490,9 @@ https://stackoverflow.com/questions/1456785/a-definitive-guide-to-api-breaking-c
 +public void MyDummy(string s, int v = 4, int w = 3);
 ```
 
-' Breaking change
+<!--
+binary breaking change
+-->
 
 ---
 
@@ -414,7 +514,9 @@ class Foo : FooBase {
 }
 ```
 
-' not breaking
+<!--
+not breaking
+-->
 
 ---
 
@@ -436,9 +538,10 @@ interface IFoo : IFooBase {
 }
 ```
 
-' Explicit implementations -> Source
-' binding breaks -> Binary
-
+<!--
+Explicit implementations -> Source
+binding breaks -> Binary
+-->
 
 ***
 
@@ -468,8 +571,10 @@ var t = new Test();
 foreach(string s in t) { Console.WriteLine(s); }
 ```
 
-' Where is IEnumerable<>?
-' Most compiler "duck"-typed -> Extendible
+<!--
+Where is IEnumerable<>?
+Most compiler "duck"-typed -> Extendible
+-->
 
 ---
 
@@ -492,7 +597,9 @@ public IEnumerable<int> GetFirst10Nos() {
 }
 ```
 
-' <GetFirst10Nos>d__0 implements IEnumerable & IEnumerator
+<!--
+<GetFirst10Nos>d__0 implements IEnumerable & IEnumerator
+-->
 
 ---
 
@@ -522,7 +629,7 @@ class MyTaskBuilder {
 
 ---
 
-https://weblogs.asp.net/dixin/understanding-c-sharp-async-await-1-compilation
+[https://weblogs.asp.net/dixin/understanding-c-sharp-async-await-1-compilation](https://weblogs.asp.net/dixin/understanding-c-sharp-async-await-1-compilation)
 
 
 ***
@@ -551,7 +658,7 @@ https://weblogs.asp.net/dixin/understanding-c-sharp-async-await-1-compilation
 ### SynchronizationContext
 
 - Abstraction for a specific environment
-- for example WPF-UI-Thread
+- for example WPF-UI-Thread / ASP.NET Request
 - independent of concrete implementation (WPF <> WinForms)
 - !`SynchronizationContext.Current` "flows" with `ExecutationContext`
 
@@ -569,6 +676,13 @@ https://weblogs.asp.net/dixin/understanding-c-sharp-async-await-1-compilation
 2. .NET will automatically redirect all assembly requests to the latest version 
 3. NuGet package version matches the version of the assembly
 
+<!-- 
+Which statement is not true?
+1. It depends: Within a single AssemblyLoadContext (previously AppDomain) yes.
+2. See 1
+3. No
+-->
+
 ---
 
 ### Change runtime behavior
@@ -578,8 +692,8 @@ app.config
 https://docs.microsoft.com/en-us/dotnet/framework/configure-apps/file-schema/runtime/index
 
 runtimeconfig.template.json
-
-https://docs.microsoft.com/en-us/dotnet/core/tools/project-json-to-csproj#runtimeoptions
+https://docs.microsoft.com/en-us/dotnet/core/runtime-config/#runtimeconfigjson
+https://docs.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#runtime-configuration-properties
 
 ---
 

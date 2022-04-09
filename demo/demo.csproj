@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net40;net48;net6.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion Condition=" '$(TargetFramework)' == 'net40' or '$(TargetFramework)' == 'net48' " >preview</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+  
+    <Using Remove="System.Net.Http" />
+  </ItemGroup>
+</Project>
