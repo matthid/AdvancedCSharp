@@ -140,6 +140,50 @@ Console.WriteLine(value.Length);
 
 ### DLR
 
+```csharp
+public static dynamic From(object wrapped) { /*...*/ }
+class C1 { public readonly int _sd = 1; }
+class C2 { public readonly int _sd = 2; }
+public static void SetFieldHelperDemo(){
+    var c1 = new C1(); var d1 = From(c1);
+    var c2 = new C2(); var d2 = From(c2);
+    d1._sd = 11;
+    d2._sd = 22;
+    Console.WriteLine($"c1._sd = {c1._sd}");
+    Console.WriteLine($"c2._sd = {c2._sd}");
+}
+```
+
+What can the DLR do? 
+
+1. always prints `1` and `2` 
+2. Can print any numbers
+3. Can print anything
+
+---
+
+```csharp
+public static dynamic From(object wrapped) { /*...*/ }
+class C1 { public static readonly int _sd = 1; }
+class C2 { public static readonly int _sd = 2; }
+public static void SetFieldHelperDemo(){
+    var c1 = new C1(); var d1 = From(c1);
+    var c2 = new C2(); var d2 = From(c2);
+    d1._sd = 11;
+    d2._sd = 22;
+    Console.WriteLine($"c1._sd = {c1._sd}");
+    Console.WriteLine($"c2._sd = {c2._sd}");
+}
+```
+
+What can the DLR do? 
+
+1. always prints `1` and `2` 
+2. Can print any numbers
+3. Can print anything
+
+---
+
 - Demo
 
 ---
