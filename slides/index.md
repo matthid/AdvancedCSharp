@@ -60,7 +60,7 @@ public class Employee
 
 ```
 
-Which other access modifiers could alternatively be applied to this class:
+Q01_a: Which other access modifiers could alternatively be applied to this class:
 
 1. `internal`, `protected` and `private`
 2. `internal`, `private`
@@ -80,7 +80,7 @@ public class ProtectedPrivate
 
 ```
 
-What does this mean?
+Q01_b: What does `protected private` mean?
 
 1. access like `private` OR `protected`
    (access is allowed when `private` or `protected` alone would allow the access)
@@ -95,7 +95,7 @@ Introduced in C# 7.2, November 15th, 2017
 
 ---
 
-What is equivalent to `char ch = ' ';`:
+Q02: What is equivalent to `char ch = ' ';`?
 
 1. `char ch = "d32";`
 2. `char ch = "\x20";`
@@ -119,6 +119,8 @@ short value = 10;
 NumberWriter.Display(value);
 ```
 
+Q03: What will happen?
+
 1. `"Long: 10"`
 2. `"Integer: 10"`
 3. throws `RuntimeBinderException`
@@ -131,6 +133,8 @@ dynamic value = 321;
 Console.WriteLine(value.Length);
 ```
 
+Q04_a: What will happen?
+
 1. `"321"`
 2. `"3"`
 4. throws `RuntimeBinderException`
@@ -142,11 +146,11 @@ Console.WriteLine(value.Length);
 
 ```csharp
 public static dynamic From(object wrapped) { /*...*/ }
-class C1 { public readonly int _sd = 1; }
-class C2 { public readonly int _sd = 2; }
+class Class1 { public readonly int _sd = 1; }
+class Class2 { public readonly int _sd = 2; }
 public static void SetFieldHelperDemo(){
-    var c1 = new C1(); var d1 = From(c1);
-    var c2 = new C2(); var d2 = From(c2);
+    var c1 = new Class1(); var d1 = From(c1);
+    var c2 = new Class2(); var d2 = From(c2);
     d1._sd = 11;
     d2._sd = 22;
     Console.WriteLine($"c1._sd = {c1._sd}");
@@ -154,21 +158,31 @@ public static void SetFieldHelperDemo(){
 }
 ```
 
-What can the DLR do? 
+Q04_b: What can you do with DLR/Reflection? 
 
-1. always prints `1` and `2` 
+1. only print `1` and `2` 
 2. Can print any numbers
 3. Can print anything
+4. Doesn't compile
+
+[Thanks to ExposedObject](https://github.com/skolima/ExposedObject)
+
+<!--
+Sidenotes:
+- No Exceptions
+- No mangling with the stack
+- Only the WriteLine Statements are considered (additional output is ignored)
+-->
 
 ---
 
 ```csharp
 public static dynamic From(object wrapped) { /*...*/ }
-class C1 { public static readonly int _sd = 1; }
-class C2 { public static readonly int _sd = 2; }
+class Class1 { public static readonly int _sd = 1; }
+class Class2 { public static readonly int _sd = 2; }
 public static void SetFieldHelperDemo(){
-    var c1 = new C1(); var d1 = From(c1);
-    var c2 = new C2(); var d2 = From(c2);
+    var c1 = new Class1(); var d1 = From(c1);
+    var c2 = new Class2(); var d2 = From(c2);
     d1._sd = 11;
     d2._sd = 22;
     Console.WriteLine($"c1._sd = {c1._sd}");
@@ -176,11 +190,40 @@ public static void SetFieldHelperDemo(){
 }
 ```
 
-What can the DLR do? 
+Q04_c: What can you do with DLR/Reflection? 
 
 1. always prints `1` and `2` 
 2. Can print any numbers
 3. Can print anything
+4. Doesn't compile
+
+<!--
+ error CS0176: Member 'SetFieldHelper.Class1._sd' cannot be accessed with an instance reference; qualify it with a type name instead [C:\proj\AdvancedCSharp\demo\demo.csproj]
+-->
+
+---
+
+```csharp
+public static dynamic From(object wrapped) { /*...*/ }
+class Class1 { public static readonly int _sd = 1; }
+class Class2 { public static readonly int _sd = 2; }
+public static void SetFieldHelperDemo(){
+    var c1 = new Class1(); var d1 = From(c1);
+    var c2 = new Class2(); var d2 = From(c2);
+    d1._sd = 11;
+    d2._sd = 22;
+    Console.WriteLine($"Class1._sd = {Class1._sd}");
+    Console.WriteLine($"Class2._sd = {Class2._sd}");
+}
+```
+
+Q04_d: What can you do with DLR/Reflection?
+
+1. always prints `1` and `2` 
+2. Can print any numbers
+3. Can print anything
+4. Doesn't compile
+
 
 ---
 
@@ -188,9 +231,11 @@ What can the DLR do?
 
 ---
 
+### Exception-Filter
+
 ```csharp
 static void DoSomething() { throw new Exception("Test"); }
-static bool MyCondition(Exception ex) { return ex.HResult == 42; }
+static bool MyCondition(Exception ex) { return false; }
 static void Main1() {
     try { DoSomething(); }
     catch (Exception ex) when (MyCondition(ex)) {
@@ -208,7 +253,6 @@ static void Main2() {
 ```
 
 <!-- 
-
 Stack is does not unwind
 Debugger does not halt (first chance exception)
 -->
@@ -247,6 +291,8 @@ static bool MyCondition(Exception ex) {
 }
 ```
 
+<!-- Use case: Logging -->
+
 ---
 
 ```csharp
@@ -259,6 +305,8 @@ static void Main() {
     }
 }
 ```
+
+Q05_a: Will happen with the above code?
 
 1. prints `"Catched ArgumentException"`
 2. Unhandled Exception: `ArgumentException`
@@ -281,7 +329,10 @@ static void Main() {
 }
 ```
 
-1. prints `"Catched ArgumentException (2)"`
+Q05_b: Will happen with the above code?
+
+1. prints `"Catched ArgumentException"`
+2. prints `"Catched ArgumentException (2)"`
 2. Unhandled Exception: `ArgumentException`
 3. Unhandled Exception: `IOException`
 4. Runtime crashes
@@ -330,12 +381,12 @@ class Mate {
     Console.WriteLine("Object"); } }
 ```
 
-<!--
-- 1x "Enum"
-- 3x "Enum"
-- 5x "Enum"
-- 6x "Enum"
--->
+Q06: How often is "Enum" written?
+
+1. 1 time
+2. 3 times
+2. 5 times
+2. 6 times
 
 ---
 
@@ -349,12 +400,18 @@ public struct Teaser {
 }
 ```
 
+Q07_a: What happens?
+
+1. compiler error
+1. runtime error
+2. overwrites "this" with a new instance
+
 --- 
 
 ```csharp
 public readonly ref struct Measurement
 {
-    public Measurement() { Values = new[]{double.NaN}; }
+    public Measurement() { Values = new[]{ double.NaN }; }
     public ReadOnlySpan<double> Values { get; init; }
     public readonly string Description { get; init; }
 
@@ -362,7 +419,7 @@ public readonly ref struct Measurement
 }
 ```
 
-How many compiler errors?
+Q07_b: How many compiler errors?
 
 1. None
 2. At least 1
@@ -397,7 +454,10 @@ test != null ? test : MyDummy.Default()
 test ?? MyDummy.Default()
 ```
 
-<!-- Is this refactoring always safe and holds? -->
+Q08: Is the refactoring safe for all types?
+
+1. Yes both with return the same instance
+2. No
 
 ---
 
@@ -430,7 +490,11 @@ public class Derived : Base {
 
 ```
 
-What happens here?
+Q09: What happens here?
+
+- compiler error
+- runtime error
+- calls base method
 
 <!--
 (4,4): error CS1971: The call to method 'Initialize' needs to be dynamically dispatched, but cannot be because it is part of a base access expression. Consider casting the dynamic arguments or eliminating the base access.
@@ -447,6 +511,8 @@ bool abool = true;
 Byte by1 = (abool ? 1 : 2);
 Byte by2 = (true ? 1 : 2);
 ```
+
+Q10: which answer is correct?
 
 1. `by1` and `by2` are assigned the same number
 2. `by1` and `by2` are assigned different numbers
@@ -487,6 +553,15 @@ Byte by2 = (true ? 1 : 2);
  }
 ```
 
+Q11: Which kind of breaking change is it (select all that apply)?
+
+1. binary-level break
+2. binary-level quiet semantics change
+3. source-level break
+4. source-level quiet semantics change
+5. None of the above
+
+
 <!-- 
 source-level quiet semantics change. (extension methods)
 -->
@@ -502,6 +577,14 @@ source-level quiet semantics change. (extension methods)
 +  public static bool bar(int i);
  }
 ```
+
+Q12: Which kind of breaking change is it (select all that apply)?
+
+1. binary-level break
+2. binary-level quiet semantics change
+3. source-level break
+4. source-level quiet semantics change
+5. None of the above
 
 <!--
 binary breaking change
@@ -521,8 +604,17 @@ source-level break (used in lambda)
  }
 ```
 
+
+Q13: Which kind of breaking change is it (select all that apply)?
+
+1. binary-level break
+2. binary-level quiet semantics change
+3. source-level break
+4. source-level quiet semantics change
+5. None of the above
+
 <!--
-binary breaking (behavior) change
+binary-level quiet semantics change
 -->
 
 ---
@@ -534,6 +626,13 @@ binary breaking (behavior) change
 +public void MyDummy(string s, int v = 4, int w = 3);
 ```
 
+Q14: Which kind of breaking change is it (select all that apply)?
+
+1. binary-level break
+2. binary-level quiet semantics change
+3. source-level break
+4. source-level quiet semantics change
+5. None of the above
 <!--
 binary breaking change
 -->
@@ -558,6 +657,13 @@ class Foo : FooBase {
 }
 ```
 
+Q15: Which kind of breaking change is it (select all that apply)?
+
+1. binary-level break
+2. binary-level quiet semantics change
+3. source-level break
+4. source-level quiet semantics change
+5. None of the above
 <!--
 not breaking
 -->
@@ -582,6 +688,13 @@ interface IFoo : IFooBase {
 }
 ```
 
+Q16: Which kind of breaking change is it (select all that apply)?
+
+1. binary-level break
+2. binary-level quiet semantics change
+3. source-level break
+4. source-level quiet semantics change
+5. None of the above
 <!--
 Explicit implementations -> Source
 binding breaks -> Binary
@@ -614,6 +727,12 @@ class Test {
 var t = new Test();
 foreach(string s in t) { Console.WriteLine(s); }
 ```
+
+Q20: What will happen?
+
+1. compile error
+2. runtime error
+3. prints "ok"
 
 <!--
 Where is IEnumerable<>?
@@ -750,6 +869,8 @@ list.ForEach(i =>
 });
 ```
 
+Q22: What will happen?
+
 1. prints 1, 2, 3, 2, 3, 3
 2. throws `"Collection was modified"`
 
@@ -758,6 +879,8 @@ list.ForEach(i =>
 ```csharp
 Console.WriteLine("Uri: " + new Uri("http://my.ser/path./item"));
 ```
+
+Q23: What will happen?
 
 1. prints `http://my.ser/path./item`
 2. prints `http://my.ser/path/item`

@@ -56,11 +56,11 @@ public class SetFieldHelper : DynamicObject {
     public static dynamic From(object d) => new SetFieldHelper(d);
     public override DynamicMetaObject GetMetaObject(Expression parameter) => new MyMetaObject(parameter, this);
 
-    class C1 { public readonly int _sd = 1; }
-    class C2 { public readonly int _sd = 2; }
+    class Class1 { public readonly int _sd = 1; }
+    class Class2 { public readonly int _sd = 2; }
     public static void SetFieldHelperDemo(){
-        var c1 = new C1(); var d1 = From(c1);
-        var c2 = new C2(); var d2 = From(c2);
+        var c1 = new Class1(); var d1 = From(c1);
+        var c2 = new Class2(); var d2 = From(c2);
         d1._sd = 11;
         d2._sd = 22;
         Console.WriteLine($"c1._sd = {c1._sd}");
