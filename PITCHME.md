@@ -431,8 +431,8 @@ public readonly ref struct Measurement
 Q07_b: How many compiler errors?
 
 1. None
-2. At least 1
-3. At least 2
+2. 1
+3. 2
 4. At least 3
 
 <!--
