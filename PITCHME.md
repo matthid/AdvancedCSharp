@@ -158,6 +158,8 @@ public static void SetFieldHelperDemo(){
 }
 ```
 
+<style scoped>section { font-size: 20px; }</style>
+
 Q04_b: What can you do with DLR/Reflection? 
 
 1. only print `1` and `2` 
@@ -190,6 +192,9 @@ public static void SetFieldHelperDemo(){
 }
 ```
 
+
+<style scoped>section { font-size: 20px; }</style>
+
 Q04_c: What can you do with DLR/Reflection? 
 
 1. always prints `1` and `2` 
@@ -216,6 +221,8 @@ public static void SetFieldHelperDemo(){
     Console.WriteLine($"Class2._sd = {Class2._sd}");
 }
 ```
+
+<style scoped>section { font-size: 20px; }</style>
 
 Q04_d: What can you do with DLR/Reflection?
 
@@ -380,6 +387,8 @@ class Mate {
   static void JustTest(object o) {
     Console.WriteLine("Object"); } }
 ```
+
+<style scoped>section { font-size: 20px; }</style>
 
 Q06: How often is "Enum" written?
 
@@ -657,6 +666,8 @@ class Foo : FooBase {
 }
 ```
 
+<style scoped>section { font-size: 20px; }</style>
+
 Q15: Which kind of breaking change is it (select all that apply)?
 
 1. binary-level break
@@ -687,6 +698,8 @@ interface IFoo : IFooBase {
     void Baz();
 }
 ```
+
+<style scoped>section { font-size: 20px; }</style>
 
 Q16: Which kind of breaking change is it (select all that apply)?
 
@@ -785,8 +798,10 @@ class MyTaskBuilder {
     public void SetResult() { }
     public void SetException(Exception exception) { }
     public MyTask Task => default(MyTask);
-    public void AwaitOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine) where TAwaiter : INotifyCompletion where TStateMachine : IAsyncStateMachine { }
-    public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine) where TAwaiter : ICriticalNotifyCompletion where TStateMachine : IAsyncStateMachine { }
+    public void AwaitOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
+      where TAwaiter : INotifyCompletion where TStateMachine : IAsyncStateMachine { }
+    public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
+      where TAwaiter : ICriticalNotifyCompletion where TStateMachine : IAsyncStateMachine { }
 }
 ```
 
